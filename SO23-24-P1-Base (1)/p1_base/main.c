@@ -31,8 +31,8 @@ int main(int argc, char *argv[]) {
     struct dirent *dp;
     dirp = opendir(argv[1]);
 
-    char *files[100];
-    char *files_output[100];
+    int *files[100];
+    int *files_output[100];
     int amount_of_files = 0;
 
     if (dirp == NULL) {
@@ -87,16 +87,22 @@ int main(int argc, char *argv[]) {
     } else {
         printf("Invalid file name format. Unable to determine extension.\n");
     }
-        files[amount_of_files] = strdup(file);
-        files_output[amount_of_files] = strdup(outputFile);
+        
+        files[amount_of_files] = open(file, O_RDONLY);
+        files_output[amount_of_files] = open(outputFile, O_RDONLY);
         amount_of_files++;
     }
 
     closedir(dirp);
-int file_num = 0
+  int file_num = 0
   set_output_file(files_output[file_num]);
 
+  int num_of_threads = 0;
+  pthread_t threads[MAX_THREADS]; 
+  int wait_for_thread = 0;
+  
   while (1) {
+    if (num_of_threads >= MAX_THREADS) { wait_for_thread = 1; }
     unsigned int event_id, delay;
     size_t num_rows, num_columns, num_coords;
     size_t xs[MAX_RESERVATION_SIZE], ys[MAX_RESERVATION_SIZE];
@@ -106,61 +112,43 @@ int file_num = 0
 
     switch (get_next(file[file_num])) {
       case CMD_CREATE:
-        if (parse_create(file[file_num], &event_id, &num_rows, &num_columns) != 0) {
-          fprintf(stderr, "Invalid command. See HELP for usage\n");
-          continue;
+        if (wait_for_thread) {pthread_join(threads[num_of_threads], NULL)}
+        if (pthread_create(threads[num_of_threads], NULL, create, &files[amount_of_files]) != 0) {
+        fprintf(stderr, "Error creating thread\n");
         }
-
-        if (ems_create(event_id, num_rows, num_columns)) {
-          fprintf(stderr, "Failed to create event\n");
-        }
-
+        num_of_threads++;
         break;
 
       case CMD_RESERVE:
-        num_coords = parse_reserve(file[file_num], MAX_RESERVATION_SIZE, &event_id, xs, ys);
-
-        if (num_coords == 0) {
-          fprintf(stderr, "Invalid command. See HELP for usage\n");
-          continue;
+        if (wait_for_thread) {pthread_join(threads[num_of_threads], NULL)}
+        if (pthread_create(threads[num_of_threads], NULL, reserve, &files[amount_of_files]) != 0) {
+        fprintf(stderr, "Error creating thread\n");
         }
-
-        if (ems_reserve(event_id, num_coords, xs, ys)) {
-          fprintf(stderr, "Failed to reserve seats\n");
-        }
-
+        num_of_threads++;
         break;
 
       case CMD_SHOW:
-        if (parse_show(file[file_num], &event_id) != 0) {
-          fprintf(stderr, "Invalid command. See HELP for usage\n");
-          continue;
+        if (wait_for_thread) {pthread_join(threads[num_of_threads], NULL)}
+        if (pthread_create(threads[num_of_threads], NULL, show, NULL) != 0) {
+        fprintf(stderr, "Error creating thread\n");
         }
-
-        if (ems_show(event_id)) {
-          fprintf(stderr, "Failed to show event\n");
-        }
-
+        num_of_threads++;
         break;
 
       case CMD_LIST_EVENTS:
-        if (ems_list_events()) {
-          fprintf(stderr, "Failed to list events\n");
+        if (wait_for_thread) {pthread_join(threads[num_of_threads], NULL)}
+        if (pthread_create(threads[num_of_threads], NULL, list_events, NULL) != 0) {
+        fprintf(stderr, "Error creating thread\n");
         }
-
+        num_of_threads++;
         break;
 
       case CMD_WAIT:
-        if (parse_wait(file[file_num], &delay, NULL) == -1) {  // thread_id is not implemented
-          fprintf(stderr, "Invalid command. See HELP for usage\n");
-          continue;
+        if (wait_for_thread) {pthread_join(threads[num_of_threads], NULL)}
+        if (pthread_create(threads[num_of_threads], NULL, wait, &files[amount_of_files]) != 0) {
+        fprintf(stderr, "Error creating thread\n");
         }
-
-        if (delay > 0) {
-          printf("Waiting...\n");
-          ems_wait(delay);
-        }
-
+        num_of_threads++;
         break;
 
       case CMD_INVALID:
@@ -186,6 +174,7 @@ int file_num = 0
 
       case EOC:
         if (file_num < amount_of_files) {
+            close(files[file_num]);
             file_num++;
             set_output_file(files_output[file_num]);
         }
@@ -196,4 +185,55 @@ int file_num = 0
         }
     }
   }
+}
+
+create(void* file){
+     if (parse_create((int)file, &event_id, &num_rows, &num_columns) != 0) {
+          fprintf(stderr, "Invalid command. See HELP for usage\n");
+        }
+     if (ems_create(event_id, num_rows, num_columns)) {
+          fprintf(stderr, "Failed to create event\n");
+        }
+}
+
+reserve(void* file){
+        num_coords = parse_reserve((int)file, MAX_RESERVATION_SIZE, &event_id, xs, ys);
+
+        if (num_coords == 0) {
+          fprintf(stderr, "Invalid command. See HELP for usage\n");
+          continue;
+        }
+
+        if (ems_reserve(event_id, num_coords, xs, ys)) {
+          fprintf(stderr, "Failed to reserve seats\n");
+        }
+}
+
+show(void* file){
+  if (parse_show((int)file, &event_id) != 0) {
+          fprintf(stderr, "Invalid command. See HELP for usage\n");
+          continue;
+        }
+
+        if (ems_show(event_id)) {
+          fprintf(stderr, "Failed to show event\n");
+        }
+}
+
+list_event(){
+if (ems_list_events()) {
+          fprintf(stderr, "Failed to list events\n");
+        }
+}
+
+wait(void* file){
+if (parse_wait((int)file, &delay, NULL) == -1) {  // thread_id is not implemented
+          fprintf(stderr, "Invalid command. See HELP for usage\n");
+          continue;
+        }
+
+        if (delay > 0) {
+          printf("Waiting...\n");
+          ems_wait(delay);
+        }
 }
