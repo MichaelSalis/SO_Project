@@ -7,7 +7,7 @@ I apologize for the oversight. I misunderstood your request. Let's correct that 
 
 #include "eventlist.h"
 
-FILE* CURRENT_OUTPUT_FILE = NULL;
+int CURRENT_OUTPUT_FILE = NULL;
 
 void set_output_file(char* file){
     if (CURRENT_OUTPUT_FILE != NULL){
