@@ -190,8 +190,9 @@ int file_num = 0
             set_output_file(files_output[file_num]);
         }
         else{
-        ems_terminate();
-        return 0;
+          close_output_file();
+          ems_terminate();
+          return 0;
         }
     }
   }
