@@ -32,6 +32,7 @@ int main(int argc, char *argv[]) {
     dirp = opendir(argv[1]);
 
     char *files[100];
+    char *files_output[100];
     int amount_of_files = 0;
 
     if (dirp == NULL) {
@@ -49,8 +50,45 @@ int main(int argc, char *argv[]) {
         
 
         char *file = malloc(128);
-        sprintf(file, "%s%s", "jobs/", dp->d_name);
+      // Find the position of the last dot (.) in the input file name
+    const char *dotPosition = strrchr(file, '.');
+
+    // Check if a dot was found and it is not the first character in the file name
+    if (dotPosition != NULL && dotPosition != file) {
+        // Calculate the length of the file name excluding the extension
+        size_t fileNameLength = dotPosition - file;
+
+        // Allocate memory for the output file name
+        char *outputFileName = (char *)malloc(fileNameLength + 5); // 5 for ".out\0"
+
+        if (outputFileName != NULL) {
+            // Copy the file name to the output file name
+            strncpy(outputFileName, file, fileNameLength);
+
+            // Add the ".out" extension
+            strcpy(outputFileName + fileNameLength, ".out");
+
+            // Create and open the output file
+            FILE *outputFile = fopen(outputFileName, "w");
+
+            if (outputFile != NULL) {
+                // Close the output file
+                fclose(outputFile);
+                printf("Output file '%s' created successfully.\n", outputFileName);
+            } else {
+                printf("Error creating output file '%s'.\n", outputFileName);
+            }
+
+            // Free the allocated memory for the output file name
+            free(outputFileName);
+        } else {
+            printf("Memory allocation error.\n");
+        }
+    } else {
+        printf("Invalid file name format. Unable to determine extension.\n");
+    }
         files[amount_of_files] = strdup(file);
+        files_output[amount_of_files] = strdup(outputFile);
         amount_of_files++;
     }
 
