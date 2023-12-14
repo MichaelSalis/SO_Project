@@ -27,6 +27,36 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  DIR *dirp;
+    struct dirent *dp;
+    dirp = opendir(argv[1]);
+
+    char *files[100];
+    int amount_of_files = 0;
+
+    if (dirp == NULL) {
+        perror("opendir failed");
+        return;
+    }
+
+    for (;;) {
+        errno = 0; 
+        dp = readdir(dirp);
+        if (dp == NULL)
+            break;
+        if (strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0)
+            continue; /* Skip . and .. */
+        
+
+        char *file = malloc(128);
+        sprintf(file, "%s%s", "jobs/", dp->d_name);
+        files[amount_of_files] = strdup(file);
+        amount_of_files++;
+    }
+
+    closedir(dirp);
+int file_num = 0
+
   while (1) {
     unsigned int event_id, delay;
     size_t num_rows, num_columns, num_coords;
@@ -35,9 +65,9 @@ int main(int argc, char *argv[]) {
     printf("> ");
     fflush(stdout);
 
-    switch (get_next(STDIN_FILENO)) {
+    switch (get_next(file[file_num])) {
       case CMD_CREATE:
-        if (parse_create(STDIN_FILENO, &event_id, &num_rows, &num_columns) != 0) {
+        if (parse_create(file[file_num], &event_id, &num_rows, &num_columns) != 0) {
           fprintf(stderr, "Invalid command. See HELP for usage\n");
           continue;
         }
@@ -49,7 +79,7 @@ int main(int argc, char *argv[]) {
         break;
 
       case CMD_RESERVE:
-        num_coords = parse_reserve(STDIN_FILENO, MAX_RESERVATION_SIZE, &event_id, xs, ys);
+        num_coords = parse_reserve(file[file_num], MAX_RESERVATION_SIZE, &event_id, xs, ys);
 
         if (num_coords == 0) {
           fprintf(stderr, "Invalid command. See HELP for usage\n");
@@ -63,7 +93,7 @@ int main(int argc, char *argv[]) {
         break;
 
       case CMD_SHOW:
-        if (parse_show(STDIN_FILENO, &event_id) != 0) {
+        if (parse_show(file[file_num], &event_id) != 0) {
           fprintf(stderr, "Invalid command. See HELP for usage\n");
           continue;
         }
@@ -82,7 +112,7 @@ int main(int argc, char *argv[]) {
         break;
 
       case CMD_WAIT:
-        if (parse_wait(STDIN_FILENO, &delay, NULL) == -1) {  // thread_id is not implemented
+        if (parse_wait(file[file_num], &delay, NULL) == -1) {  // thread_id is not implemented
           fprintf(stderr, "Invalid command. See HELP for usage\n");
           continue;
         }
@@ -116,8 +146,13 @@ int main(int argc, char *argv[]) {
         break;
 
       case EOC:
+        if (file_num < amount_of_files) {
+            file_num++;
+        }
+        else{
         ems_terminate();
         return 0;
+        }
     }
   }
 }
