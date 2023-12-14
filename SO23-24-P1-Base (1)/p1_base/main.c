@@ -94,6 +94,7 @@ int main(int argc, char *argv[]) {
 
     closedir(dirp);
 int file_num = 0
+  set_output_file(files_output[file_num]);
 
   while (1) {
     unsigned int event_id, delay;
@@ -186,6 +187,7 @@ int file_num = 0
       case EOC:
         if (file_num < amount_of_files) {
             file_num++;
+            set_output_file(files_output[file_num]);
         }
         else{
         ems_terminate();
