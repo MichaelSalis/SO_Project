@@ -10,12 +10,19 @@ I apologize for the oversight. I misunderstood your request. Let's correct that 
 FILE* CURRENT_OUTPUT_FILE = NULL;
 
 void set_output_file(char* file){
-    CURRENT_OUTPUT_FILE = file;
+    if (CURRENT_OUTPUT_FILE != NULL){
+        close(CURRENT_OUTPUT_FILE);
+    }
+    CURRENT_OUTPUT_FILE = open(CURRENT_OUTPUT_FILE, O_WRONLY | O_APPEND);
+}
+
+void close_output_file(){
+    close(CURRENT_OUTPUT_FILE);
 }
 
 void write_output(const char* text) {
     if (CURRENT_OUTPUT_FILE != NULL) {
-        fprintf(CURRENT_OUTPUT_FILE, "%s", text);
+         write(CURRENT_OUTPUT_FILE, text, strlen(text));
     } else {
         fprintf(stderr, "Error: Output file not set\n");
     }
