@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     struct dirent *dp;
     dirp = opendir(argv[2]);
 
-    char *files[100];
+    int files[100];
     char *files_output[100];
     int amount_of_files = 0;
 
@@ -70,6 +70,7 @@ int main(int argc, char *argv[]) {
         
 
         char *file = malloc(128);
+        strcpy(file, dp->d_name);
       // Find the position of the last dot (.) in the input file name
     const char *dotPosition = strrchr(file, '.');
 
@@ -92,10 +93,17 @@ int main(int argc, char *argv[]) {
             int outputFile = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
             if (outputFile != -1) {
+                files[amount_of_files] = open(file, O_RDONLY);
+                free(file);
+                files_output[amount_of_files] = strdup(outputFileName);
+                // Free the allocated memory for the output file name
+                free(outputFileName);
+                amount_of_files++;
                 // Close the output file
                 close(outputFile);
             } else {
                 printf("Error creating output file '%s'.\n", outputFileName);
+                free(file);
             }
         } else {
             printf("Memory allocation error.\n");
@@ -103,11 +111,7 @@ int main(int argc, char *argv[]) {
     } else {
         printf("Invalid file name format. Unable to determine extension.\n");
     }
-        files[amount_of_files] = strdup(file);
-        files_output[amount_of_files] = strdup(outputFile);
-        // Free the allocated memory for the output file name
-        free(outputFileName);
-        amount_of_files++;
+        
     }
     
     closedir(dirp);
@@ -136,7 +140,7 @@ int main(int argc, char *argv[]) {
         break;
 
       case CMD_RESERVE:
-        num_coords = parse_reserve(file[file_num], MAX_RESERVATION_SIZE, &event_id, xs, ys);
+        num_coords = parse_reserve(files[file_num], MAX_RESERVATION_SIZE, &event_id, xs, ys);
 
         if (num_coords == 0) {
           fprintf(stderr, "Invalid command. See HELP for usage\n");
@@ -150,7 +154,7 @@ int main(int argc, char *argv[]) {
         break;
 
       case CMD_SHOW:
-        if (parse_show(file[file_num], &event_id) != 0) {
+        if (parse_show(files[file_num], &event_id) != 0) {
           fprintf(stderr, "Invalid command. See HELP for usage\n");
           continue;
         }
@@ -169,7 +173,7 @@ int main(int argc, char *argv[]) {
         break;
 
       case CMD_WAIT:
-        if (parse_wait(file[file_num], &delay, NULL) == -1) {  // thread_id is not implemented
+        if (parse_wait(files[file_num], &delay, NULL) == -1) {  // thread_id is not implemented
           fprintf(stderr, "Invalid command. See HELP for usage\n");
           continue;
         }
