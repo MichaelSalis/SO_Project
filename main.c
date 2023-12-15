@@ -124,6 +124,7 @@ int main(int argc, char *argv[]) {
     unsigned int event_id, delay;
     size_t num_rows, num_columns, num_coords;
     size_t xs[MAX_RESERVATION_SIZE], ys[MAX_RESERVATION_SIZE];
+    fflush(stdout);
 
     switch (get_next(files[file_num])) {
       case CMD_CREATE:
