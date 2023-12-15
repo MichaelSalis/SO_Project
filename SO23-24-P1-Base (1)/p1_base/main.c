@@ -179,6 +179,9 @@ int main(int argc, char *argv[]) {
             set_output_file(files_output[file_num]);
         }
         else{
+          for (int i = 0; i < MAX_THREADS; i++){
+              pthread_join(threads[i], NULL);
+          }
           close_output_file();
           ems_terminate();
           return 0;
