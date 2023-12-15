@@ -16,12 +16,12 @@ int main(int argc, char *argv[]) {
     }
 
     char *endptr;
-    unsigned int delay = (unsigned int)strtoul(argv[1], &endptr, 10);
-    if (*endptr != '\0' || delay > UINT_MAX) {
+    unsigned int start_up_delay = (unsigned int)strtoul(argv[1], &endptr, 10);
+    if (*endptr != '\0' || start_up_delay > UINT_MAX) {
         fprintf(stderr, "Invalid delay value\n");
         return 1;
     }
-    state_access_delay_ms = (unsigned int)delay;
+    state_access_delay_ms = (unsigned int)start_up_delay;
 
     MAX_PROC = atoi(argv[3]);
     if (MAX_PROC <= 0) {
@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
     }
     
     closedir(dirp);
-    int file_num = 0
+    int file_num = 0;
     set_output_file(files_output[file_num]);
 
   while (1) {
