@@ -10,26 +10,39 @@
 int main(int argc, char *argv[]) {
   unsigned int state_access_delay_ms = STATE_ACCESS_DELAY_MS;
 
-  if (argc > 1) {
-    char *endptr;
-    unsigned long int delay = strtoul(argv[1], &endptr, 10);
-
-    if (*endptr != '\0' || delay > UINT_MAX) {
-      fprintf(stderr, "Invalid delay value or value too large\n");
-      return 1;
+  if (argc < 4) {
+        fprintf(stderr, "Usage: %s <state_access_delay_ms> <jobs_directory> <max_proc>, <max_threads>\n", argv[0]);
+        return 1;
     }
 
+    char *endptr;
+    unsigned int delay = (unsigned int)strtoul(argv[1], &endptr, 10);
+    if (*endptr != '\0' || delay > UINT_MAX) {
+        fprintf(stderr, "Invalid delay value\n");
+        return 1;
+    }
     state_access_delay_ms = (unsigned int)delay;
-  }
 
-  if (ems_init(state_access_delay_ms)) {
-    fprintf(stderr, "Failed to initialize EMS\n");
-    return 1;
-  }
+    MAX_PROC = atoi(argv[3]);
+    if (MAX_PROC <= 0) {
+        fprintf(stderr, "Invalid MAX_PROC value\n");
+        return 1;
+    }
 
+    MAX_THREADS = atoi(argv[4]);
+    if (MAX_THREADS <= 0) {
+        fprintf(stderr, "Invalid MAX_THREADS value\n");
+        return 1;
+    }
+
+
+    if (ems_init(state_access_delay_ms)) {
+        fprintf(stderr, "Failed to initialize EMS\n");
+        return 1;
+    }
   DIR *dirp;
     struct dirent *dp;
-    dirp = opendir(argv[1]);
+    dirp = opendir(argv[2]);
 
     char *files[100];
     char *files_output[100];
