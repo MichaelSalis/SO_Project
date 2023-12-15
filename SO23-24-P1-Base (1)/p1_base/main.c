@@ -82,18 +82,14 @@ int main(int argc, char *argv[]) {
             strcpy(outputFileName + fileNameLength, ".out");
 
             // Create and open the output file
-            FILE *outputFile = fopen(outputFileName, "w");
+            int outputFile =open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
             if (outputFile != NULL) {
                 // Close the output file
-                fclose(outputFile);
-                printf("Output file '%s' created successfully.\n", outputFileName);
+                close(outputFile, NULL);
             } else {
                 printf("Error creating output file '%s'.\n", outputFileName);
             }
-
-            // Free the allocated memory for the output file name
-            free(outputFileName);
         } else {
             printf("Memory allocation error.\n");
         }
@@ -102,12 +98,14 @@ int main(int argc, char *argv[]) {
     }
         files[amount_of_files] = strdup(file);
         files_output[amount_of_files] = strdup(outputFile);
+        // Free the allocated memory for the output file name
+        free(outputFileName);
         amount_of_files++;
     }
-
+    
     closedir(dirp);
-int file_num = 0
-  set_output_file(files_output[file_num]);
+    int file_num = 0
+    set_output_file(files_output[file_num]);
 
   while (1) {
     unsigned int event_id, delay;
