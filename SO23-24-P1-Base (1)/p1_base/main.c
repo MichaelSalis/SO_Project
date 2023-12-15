@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
     // Check if a dot was found and it is not the first character in the file name
     if (dotPosition != NULL && dotPosition != file) {
         // Calculate the length of the file name excluding the extension
-        size_t fileNameLength = dotPosition - file;
+        size_t fileNameLength = (size_t)(dotPosition - file);
 
         // Allocate memory for the output file name
         char *outputFileName = (char *)malloc(fileNameLength + 5); // 5 for ".out\0"
