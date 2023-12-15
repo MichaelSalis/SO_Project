@@ -102,29 +102,28 @@ int main(int argc, char *argv[]) {
                 // Close the output file
                 close(outputFile);
             } else {
-                printf("Error creating output file '%s'.\n", outputFileName);
+                fprintf(stderr, "Error creating output file '%s'.\n", outputFileName);
                 free(file);
             }
         } else {
-            printf("Memory allocation error.\n");
+            fprintf(stderr, "Error: Memory allocation error.\n");
         }
     } else {
-        printf("Invalid file name format. Unable to determine extension.\n");
+       fprintf(stderr, "Error: Invalid file name format. Unable to determine extension.\n");
     }
         
     }
     
     closedir(dirp);
     int file_num = 0;
+    if(files_output[file_num] == NULL)
+    {fprintf(stderr, "Error: No output files created");}
     set_output_file(files_output[file_num]);
 
   while (1) {
     unsigned int event_id, delay;
     size_t num_rows, num_columns, num_coords;
     size_t xs[MAX_RESERVATION_SIZE], ys[MAX_RESERVATION_SIZE];
-
-    printf("> ");
-    fflush(stdout);
 
     switch (get_next(files[file_num])) {
       case CMD_CREATE:
