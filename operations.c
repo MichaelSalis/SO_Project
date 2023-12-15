@@ -17,7 +17,9 @@ void set_output_file(char* file){
         close(CURRENT_OUTPUT_FILE);
     }
     CURRENT_OUTPUT_FILE = open(file, O_WRONLY | O_APPEND);
-    printf("OPENING FILE: %s", file);
+    if (CURRENT_OUTPUT_FILE == -1){
+        fprintf(STDERR, "Error: could not open file %s\n", file);
+    }
 }
 
 void close_output_file(){
